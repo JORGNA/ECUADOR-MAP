@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Mapa Interactivo Ecuador</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: #f5f5f5;
+        }
+        svg {
+            width: 80%;
+            height: auto;
+        }
+        .tooltip {
+            position: absolute;
+            background: rgba(0,0,0,0.8);
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            pointer-events: none;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mapa Interactivo de Ecuador</h1>
+    <div id="map-container"></div>
+    <div id="tooltip" class="tooltip"></div>
+
+    <script>
+        const tooltip = document.getElementById('tooltip');
+
+        // Cargar el SVG
+        fetch('ecuador.svg')
+            .then(response => response.text())
+            .then(svgText => {
+                document.getElementById('map-container').innerHTML = svgText;
+
+                // Una vez cargado, agregar listeners a cada provincia
+                fetch('provincias_data.json')
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(prov => {
+                            const provElement = document.getElementById(prov.provincia);
+                            if (provElement) {
+                                provElement.style.cursor = 'pointer';
+                                provElement.addEventListener('click', e => {
+                                    tooltip.innerHTML = `<strong>${prov.provincia}</strong><br>
+                                        Ventas: $${prov.ventas.toLocaleString()}<br>
+                                        Producción: ${prov.produccion}<br>
+                                        Origen Capital: ${prov.origen_capital}`;
+                                    tooltip.style.display = 'block';
+                                    tooltip.style.left = e.pageX + 'px';
+                                    tooltip.style.top = e.pageY + 'px';
+                                });
+                            }
+                        });
+
+                        document.addEventListener('click', e => {
+                            if (!e.target.closest('path')) {
+                                tooltip.style.display = 'none';
+                            }
+                        });
+                    });
+            });
+    </script>
+</body>
+</html>
