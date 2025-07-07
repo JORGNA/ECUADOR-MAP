@@ -1,71 +1,74 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <title>Mapa Interactivo Ecuador</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: #f5f5f5;
-        }
-        svg {
-            width: 80%;
-            height: auto;
-        }
-        .tooltip {
-            position: absolute;
-            background: rgba(0,0,0,0.8);
-            color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            pointer-events: none;
-            display: none;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Mapa Ecuador</title>
+  <style>
+    body {
+      background: #b3e5fc; /* Celeste */
+      margin: 0;
+    }
+    svg {
+      width: 80%;
+      height: auto;
+      display: block;
+      margin: 40px auto;
+    }
+    path {
+      fill: #6ecf6e; /* Verde suave */
+      stroke: #fff;
+      stroke-width: 0.5;
+      cursor: pointer;
+    }
+    .tooltip {
+      position: absolute;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      pointer-events: none;
+      display: none;
+      font-size: 14px;
+    }
+  </style>
 </head>
 <body>
-    <h1>Mapa Interactivo de Ecuador</h1>
-    <div id="map-container"></div>
-    <div id="tooltip" class="tooltip"></div>
+  <div id="map-container"></div>
+  <div id="tooltip" class="tooltip"></div>
 
-    <script>
-        const tooltip = document.getElementById('tooltip');
+  <script>
+    const tooltip = document.getElementById('tooltip');
 
-        // Cargar el SVG
-        fetch('ecuador.svg')
-            .then(response => response.text())
-            .then(svgText => {
-                document.getElementById('map-container').innerHTML = svgText;
+    fetch('ecuador.svg')
+      .then(response => response.text())
+      .then(svgText => {
+        document.getElementById('map-container').innerHTML = svgText;
 
-                // Una vez cargado, agregar listeners a cada provincia
-                fetch('provincias_data.json')
-                    .then(response => response.json())
-                    .then(data => {
-                        data.forEach(prov => {
-                            const provElement = document.getElementById(prov.provincia);
-                            if (provElement) {
-                                provElement.style.cursor = 'pointer';
-                                provElement.addEventListener('click', e => {
-                                    tooltip.innerHTML = `<strong>${prov.provincia}</strong><br>
-                                        Ventas: $${prov.ventas.toLocaleString()}<br>
-                                        Producción: ${prov.produccion}<br>
-                                        Origen Capital: ${prov.origen_capital}`;
-                                    tooltip.style.display = 'block';
-                                    tooltip.style.left = e.pageX + 'px';
-                                    tooltip.style.top = e.pageY + 'px';
-                                });
-                            }
-                        });
-
-                        document.addEventListener('click', e => {
-                            if (!e.target.closest('path')) {
-                                tooltip.style.display = 'none';
-                            }
-                        });
-                    });
+        fetch('provincias_data.json')
+          .then(response => response.json())
+          .then(data => {
+            data.forEach(prov => {
+              const el = document.getElementById(prov.provincia);
+              if (el) {
+                el.addEventListener('click', e => {
+                  tooltip.innerHTML = `<strong>${prov.nombre}</strong><br>
+                    Ventas: $${prov.ventas.toLocaleString()}<br>
+                    Producción: ${prov.produccion}<br>
+                    Origen Capital: ${prov.origen_capital}`;
+                  tooltip.style.display = 'block';
+                  tooltip.style.left = e.pageX + 'px';
+                  tooltip.style.top = e.pageY + 'px';
+                });
+              }
             });
-    </script>
+
+            document.addEventListener('click', e => {
+              if (!e.target.closest('path')) {
+                tooltip.style.display = 'none';
+              }
+            });
+          });
+      });
+  </script>
 </body>
 </html>
