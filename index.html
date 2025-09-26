@@ -1,158 +1,157 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mapa Ecuador con Datos</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <meta charset="UTF-8" />
+  <title>Mapa Ecuador</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 20px;
-      background-color: white;
+      font-family: Arial, sans-serif;
+      background: #fff; /* Fondo blanco fuera del cuadro */
     }
 
     .container {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
+      padding: 20px;
       gap: 20px;
     }
 
-    .map-container, .table-container {
-      flex: 1;
-      background: white;
+    /* Cuadro del mapa */
+    #map-wrapper {
+      flex: 1.2;   /* ocupa más espacio que la tabla */
+      border: 1px solid #ddd;
       border-radius: 10px;
-      padding: 15px;
-      box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+      background: #b3e5fc; /* Fondo celeste solo dentro del cuadro */
+      padding: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      height: 80vh; /* que el mapa se vea grande */
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .map-container {
-      height: 80vh; /* mapa más grande */
+    #map-container svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
 
-    .table-container {
-      height: 80vh; /* tabla ocupa toda la altura */
+    path {
+      fill: #6ecf6e; /* Verde suave */
+      stroke: #fff;
+      stroke-width: 0.5;
+      cursor: pointer;
+    }
+
+    path:hover {
+      fill: #4caf50;
+    }
+
+    /* Tooltip (se mantiene igual que antes) */
+    .tooltip {
+      position: absolute;
+      background: rgba(0,0,0,0.85);
+      color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      pointer-events: none;
+      display: none;
+      font-size: 14px;
+    }
+
+    /* Panel derecho para la tabla */
+    #table-container {
+      flex: 1;
+      background: #fff;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      height: 80vh; /* misma altura que el mapa */
       overflow-y: auto; /* scroll si hay demasiados datos */
     }
 
-    svg {
-      width: 100%;
-      height: 100%;
+    #table-container h2 {
+      margin-top: 0;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
+      margin-top: 15px;
     }
 
     th, td {
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
       padding: 8px;
       text-align: left;
+      font-size: 14px;
     }
 
     th {
-      background-color: #f2f2f2;
+      background: #f4f4f4;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Mapa -->
-    <div class="map-container">
-      <svg id="map"></svg>
+    <div id="map-wrapper">
+      <div id="map-container"></div>
     </div>
-
-    <!-- Tabla -->
-    <div class="table-container">
-      <h2 id="province-name">Selecciona una provincia</h2>
-      <table id="data-table">
-        <thead>
-          <tr>
-            <th>Indicador</th>
-            <th>Valor</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+    <div id="table-container">
+      <h2>Selecciona una provincia</h2>
+      <p>Haz click en el mapa para ver los datos completos aquí.</p>
     </div>
   </div>
 
+  <div id="tooltip" class="tooltip"></div>
+
   <script>
-    const svg = d3.select("#map");
-    const width = document.querySelector(".map-container").clientWidth;
-    const height = document.querySelector(".map-container").clientHeight;
+    const tooltip = document.getElementById('tooltip');
+    const tableContainer = document.getElementById('table-container');
 
-    const projection = d3.geoMercator()
-      .scale(2800) // aumenta o reduce para ajustar
-      .center([-78.5, -1.5]) // centro de Ecuador
-      .translate([width / 2, height / 2]);
+    fetch('ecuador.svg')
+      .then(response => response.text())
+      .then(svgText => {
+        document.getElementById('map-container').innerHTML = svgText;
 
-    const path = d3.geoPath().projection(projection);
+        fetch('provincias_data.json')
+          .then(response => response.json())
+          .then(data => {
+            data.forEach(prov => {
+              const el = document.getElementById(prov.provincia);
+              if (el) {
+                // Tooltip (flotante)
+                el.addEventListener('mousemove', e => {
+                  tooltip.innerHTML = `<strong>${prov.nombre}</strong><br>
+                    Ventas: $${prov.ventas.toLocaleString()}<br>
+                    Producción: ${prov.produccion}<br>
+                    Origen Capital: ${prov.origen_capital}`;
+                  tooltip.style.display = 'block';
+                  tooltip.style.left = e.pageX + 10 + 'px';
+                  tooltip.style.top = e.pageY + 10 + 'px';
+                });
 
-    // Cargar mapa
-    d3.json("https://raw.githubusercontent.com/holtzy/D3-graph-gallery/master/DATA/world.geojson").then(function(data) {
-      const ecuador = data.features.filter(d => d.properties.name === "Ecuador");
+                el.addEventListener('mouseleave', () => {
+                  tooltip.style.display = 'none';
+                });
 
-      svg.selectAll("path")
-        .data(ecuador)
-        .enter()
-        .append("path")
-        .attr("d", path)
-        .attr("fill", "lightgreen")
-        .attr("stroke", "black")
-        .on("click", function(event, d) {
-          loadProvinceData("EC-SE"); // ejemplo, lo conectamos al JSON
-        });
-    });
-
-    // Cargar datos desde JSON
-    const provincias = [
-      {
-        "provincia": "EC-O",
-        "nombre": "Machala",
-        "ventas": 50000000,
-        "produccion": "Comercio, agricultura",
-        "origen_capital": "Grande, mediana y pequeña empresa"
-      },
-      {
-        "provincia": "EC-SE",
-        "nombre": "Santa Elena",
-        "ventas": 7000000,
-        "produccion": "Comercio, agricultura, servicios",
-        "origen_capital": "Grande, pequeña y mediana empresa  (iguales pym)"
-      },
-      {
-        "provincia": "EC-SD",
-        "nombre": "Sto. Dgo.",
-        "ventas": 36000000,
-        "produccion": "Comercio, servicios, agricultura",
-        "origen_capital": "Grande, mediana y pequeña empresa"
-      },
-      {
-        "provincia": "EC-Z",
-        "nombre": "Zamora Chinchipe",
-        "ventas": 0,
-        "produccion": "0",
-        "origen_capital": "oro"
-      }
-    ];
-
-    function loadProvinceData(code) {
-      const provincia = provincias.find(p => p.provincia === code);
-      if (!provincia) return;
-
-      document.getElementById("province-name").textContent = provincia.nombre;
-
-      const tbody = document.querySelector("#data-table tbody");
-      tbody.innerHTML = `
-        <tr><td>Ventas</td><td>$${provincia.ventas.toLocaleString()}</td></tr>
-        <tr><td>Producción</td><td>${provincia.produccion}</td></tr>
-        <tr><td>Origen Capital</td><td>${provincia.origen_capital}</td></tr>
-      `;
-    }
+                // Panel derecho (tabla fija)
+                el.addEventListener('click', () => {
+                  tableContainer.innerHTML = `
+                    <h2>${prov.nombre}</h2>
+                    <table>
+                      <tr><th>Indicador</th><th>Valor</th></tr>
+                      <tr><td>Ventas</td><td>$${prov.ventas.toLocaleString()}</td></tr>
+                      <tr><td>Producción</td><td>${prov.produccion}</td></tr>
+                      <tr><td>Origen Capital</td><td>${prov.origen_capital}</td></tr>
+                    </table>
+                  `;
+                });
+              }
+            });
+          });
+      });
   </script>
 </body>
 </html>
