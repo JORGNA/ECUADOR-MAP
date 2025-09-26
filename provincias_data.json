@@ -19,5 +19,12 @@
     "ventas": 36000000,
     "produccion": "Comercio, servicios, agricultura",
     "origen_capital": "Grande, mediana y pequeña empresa"
+  },
+  {
+    "provincia": "EC-Z",
+    "nombre": "Zamora Chinchipe",
+    "ventas": 0,
+    "produccion": "0",
+    "origen_capital": "oro"
   }
 ]
