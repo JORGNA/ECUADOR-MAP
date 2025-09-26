@@ -5,21 +5,45 @@
   <title>Mapa Ecuador</title>
   <style>
     body {
-      background: #b3e5fc; /* Celeste */
       margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fff; /* Fondo blanco fuera del cuadro */
     }
-    svg {
-      width: 80%;
+
+    .container {
+      display: flex;
+      padding: 20px;
+      gap: 20px;
+    }
+
+    /* Cuadro del mapa */
+    #map-wrapper {
+      width: 40%;   /* mapa más pequeño */
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      background: #b3e5fc; /* Fondo celeste solo dentro del cuadro */
+      padding: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    #map-container svg {
+      width: 100%;
       height: auto;
       display: block;
-      margin: 40px auto;
     }
+
     path {
       fill: #6ecf6e; /* Verde suave */
       stroke: #fff;
       stroke-width: 0.5;
       cursor: pointer;
     }
+
+    path:hover {
+      fill: #4caf50;
+    }
+
+    /* Tooltip (se mantiene igual que antes) */
     .tooltip {
       position: absolute;
       background: rgba(0,0,0,0.85);
@@ -30,14 +54,55 @@
       display: none;
       font-size: 14px;
     }
+
+    /* Panel derecho para la tabla */
+    #table-container {
+      flex: 1;
+      background: #fff;
+      padding: 20px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    #table-container h2 {
+      margin-top: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    th {
+      background: #f4f4f4;
+    }
   </style>
 </head>
 <body>
-  <div id="map-container"></div>
+  <div class="container">
+    <div id="map-wrapper">
+      <div id="map-container"></div>
+    </div>
+    <div id="table-container">
+      <h2>Selecciona una provincia</h2>
+      <p>Haz click en el mapa para ver los datos completos aquí.</p>
+    </div>
+  </div>
+
   <div id="tooltip" class="tooltip"></div>
 
   <script>
     const tooltip = document.getElementById('tooltip');
+    const tableContainer = document.getElementById('table-container');
 
     fetch('ecuador.svg')
       .then(response => response.text())
@@ -50,21 +115,33 @@
             data.forEach(prov => {
               const el = document.getElementById(prov.provincia);
               if (el) {
-                el.addEventListener('click', e => {
+                // Tooltip (flotante)
+                el.addEventListener('mousemove', e => {
                   tooltip.innerHTML = `<strong>${prov.nombre}</strong><br>
                     Ventas: $${prov.ventas.toLocaleString()}<br>
                     Producción: ${prov.produccion}<br>
                     Origen Capital: ${prov.origen_capital}`;
                   tooltip.style.display = 'block';
-                  tooltip.style.left = e.pageX + 'px';
-                  tooltip.style.top = e.pageY + 'px';
+                  tooltip.style.left = e.pageX + 10 + 'px';
+                  tooltip.style.top = e.pageY + 10 + 'px';
                 });
-              }
-            });
 
-            document.addEventListener('click', e => {
-              if (!e.target.closest('path')) {
-                tooltip.style.display = 'none';
+                el.addEventListener('mouseleave', () => {
+                  tooltip.style.display = 'none';
+                });
+
+                // Panel derecho (tabla fija)
+                el.addEventListener('click', () => {
+                  tableContainer.innerHTML = `
+                    <h2>${prov.nombre}</h2>
+                    <table>
+                      <tr><th>Indicador</th><th>Valor</th></tr>
+                      <tr><td>Ventas</td><td>$${prov.ventas.toLocaleString()}</td></tr>
+                      <tr><td>Producción</td><td>${prov.produccion}</td></tr>
+                      <tr><td>Origen Capital</td><td>${prov.origen_capital}</td></tr>
+                    </table>
+                  `;
+                });
               }
             });
           });
