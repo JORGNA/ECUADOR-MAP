@@ -4,93 +4,45 @@
   <meta charset="UTF-8" />
   <title>Mapa Ecuador</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #fff; /* Fondo blanco fuera del cuadro */
+    body{ margin:0; font-family:Arial, sans-serif; background:#fff; }
+    .container{ display:flex; gap:20px; padding:20px; }
+
+    /* Panel del mapa */
+    #map-wrapper{
+      flex:1.2;
+      border:1px solid #ddd;
+      border-radius:10px;
+      background:#b3e5fc;
+      padding:10px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1);
+      height:80vh;
+      display:flex; align-items:center; justify-content:center;
+    }
+    /* MUY IMPORTANTE para que el SVG pueda ocupar todo */
+    #map-container{ width:100%; height:100%; }
+    #map-container svg{ width:100%; height:100%; display:block; }
+
+    /* Provincias */
+    path{ fill:#6ecf6e; stroke:#fff; stroke-width:0.5; cursor:pointer; transition:fill .15s; }
+    path:hover{ fill:#4caf50; }
+
+    /* Tooltip (igual que lo tenías) */
+    .tooltip{
+      position:absolute; background:rgba(0,0,0,0.85); color:#fff;
+      padding:10px; border-radius:5px; pointer-events:none; display:none; font-size:14px;
     }
 
-    .container {
-      display: flex;
-      padding: 20px;
-      gap: 20px;
+    /* Panel derecho */
+    #table-container{
+      flex:1; background:#fff; padding:20px; border:1px solid #ddd; border-radius:10px;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1); height:80vh; overflow:auto;
     }
+    #table-container h2{ margin-top:0; }
 
-    /* Cuadro del mapa */
-    #map-wrapper {
-      flex: 1.2;   /* ocupa más espacio que la tabla */
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      background: #b3e5fc; /* Fondo celeste solo dentro del cuadro */
-      padding: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      height: 80vh; /* que el mapa se vea grande */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #map-container svg {
-      width: 100%;
-      height: 100%;
-      display: block;
-    }
-
-    path {
-      fill: #6ecf6e; /* Verde suave */
-      stroke: #fff;
-      stroke-width: 0.5;
-      cursor: pointer;
-    }
-
-    path:hover {
-      fill: #4caf50;
-    }
-
-    /* Tooltip (se mantiene igual que antes) */
-    .tooltip {
-      position: absolute;
-      background: rgba(0,0,0,0.85);
-      color: #fff;
-      padding: 10px;
-      border-radius: 5px;
-      pointer-events: none;
-      display: none;
-      font-size: 14px;
-    }
-
-    /* Panel derecho para la tabla */
-    #table-container {
-      flex: 1;
-      background: #fff;
-      padding: 20px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      height: 80vh; /* misma altura que el mapa */
-      overflow-y: auto; /* scroll si hay demasiados datos */
-    }
-
-    #table-container h2 {
-      margin-top: 0;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 15px;
-    }
-
-    th, td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-      font-size: 14px;
-    }
-
-    th {
-      background: #f4f4f4;
-    }
+    table{ width:100%; border-collapse:collapse; margin-top:15px; font-size:14px; }
+    th,td{ border:1px solid #ddd; padding:8px; text-align:left; vertical-align:top; }
+    th{ background:#f4f4f4; }
+    .small{ font-size:12px; color:#666; }
   </style>
 </head>
 <body>
@@ -110,45 +62,154 @@
     const tooltip = document.getElementById('tooltip');
     const tableContainer = document.getElementById('table-container');
 
+    /* -------- Tabla ESPECIAL para Zamora Chinchipe -------- */
+    const zamoraHeaders = [
+      "Provincia / Cantón",
+      "Ventas totales aprox. /2023",
+      "Producción /2023/Empresas",
+      "Origen de Capital/2023/Empresas",
+      "Pobreza y pobreza extrema % (Y)/ 2024",
+      "Sector formal /2024",
+      "Sector informal/empleo",
+      "Empleo",
+      "Desempleo",
+      "Tipo delito penal/2024",
+      "Asesinatos/24",
+      "Ventas Usd. Aprox. Mensual (IVA)/2024",
+      "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025",
+      "Participación tributaria a nivel nacional Enero - Julio/25"
+    ];
+
+    const zamoraRows = [
+      {
+        "Provincia / Cantón":"Zamora Chinchipe",
+        "Ventas totales aprox. /2023":"2,629,880",
+        "Producción /2023/Empresas":"2,075,097",
+        "Origen de Capital/2023/Empresas":"—",
+        "Pobreza y pobreza extrema % (Y)/ 2024":"53,2",
+        "Sector formal /2024":"24,40%",
+        "Sector informal/empleo":"72,40%",
+        "Empleo":"97,40%",
+        "Desempleo":"2,60%",
+        "Tipo delito penal/2024":"Asesinatos (24), homicidios (18), feminicidios (8)",
+        "Asesinatos/24":"50",
+        "Ventas Usd. Aprox. Mensual (IVA)/2024":"127.868.034",
+        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"69.228.107,68",
+        "Participación tributaria a nivel nacional Enero - Julio/25":"4to. luego de Pichincha, Guayas y Azuay"
+      },
+      {
+        "Provincia / Cantón":"El Pangui",
+        "Ventas totales aprox. /2023":"1,411,300",
+        "Producción /2023/Empresas":"1,148,320",
+        "Origen de Capital/2023/Empresas":"Explotación minas y canteras",
+        "Tipo delito penal/2024":"Asesinatos (5), homicidios (1), feminicidios (2)",
+        "Asesinatos/24":"8",
+        "Ventas Usd. Aprox. Mensual (IVA)/2024":"87.809.105",
+        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"49.677.831"
+      },
+      {
+        "Provincia / Cantón":"Zamora",
+        "Ventas totales aprox. /2023":"118,110",
+        "Producción /2023/Empresas":"58,832",
+        "Origen de Capital/2023/Empresas":"Comercio, reparación automotores y motocicletas",
+        "Tipo delito penal/2024":"Asesinatos (1), homicidios (6), feminicidios (3)",
+        "Asesinatos/24":"10",
+        "Ventas Usd. Aprox. Mensual (IVA)/2024":"6.222.707",
+        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"4.576.739"
+      },
+      {
+        "Provincia / Cantón":"Yantzaza",
+        "Ventas totales aprox. /2023":"1,075,960",
+        "Producción /2023/Empresas":"905,708",
+        "Origen de Capital/2023/Empresas":"Explotación minas y canteras",
+        "Tipo delito penal/2024":"Asesinatos (4), homicidios (5), feminicidios (2)",
+        "Asesinatos/24":"11",
+        "Ventas Usd. Aprox. Mensual (IVA)/2024":"31.112.418",
+        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"23.244.597"
+      },
+      {
+        "Provincia / Cantón":"Paquisha",
+        "Ventas totales aprox. /2023":"5,790",
+        "Producción /2023/Empresas":"2,348",
+        "Origen de Capital/2023/Empresas":"Explotación minas y canteras",
+        "Tipo delito penal/2024":"Asesinatos (5), homicidios (3), feminicidios (0)",
+        "Asesinatos/24":"8",
+        "Ventas Usd. Aprox. Mensual (IVA)/2024":"523.295",
+        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"474.105"
+      }
+    ];
+
+    function renderZamoraTable(){
+      const thead = `<thead><tr>${zamoraHeaders.map(h=>`<th>${h}</th>`).join('')}</tr></thead>`;
+      const tbody = `<tbody>${zamoraRows.map(r=>`<tr>${zamoraHeaders.map(h=>`<td>${r[h] ?? "—"}</td>`).join('')}</tr>`).join('')}</tbody>`;
+      tableContainer.innerHTML = `
+        <h2>ANÁLISIS DE MERCADO PREVENTIVO · PROVINCIA DE ZAMORA CHINCHIPE</h2>
+        <div class="small">* Campos con “—” no tienen dato reportado.</div>
+        <table>${thead}${tbody}</table>
+      `;
+    }
+    /* ------------------------------------------------------ */
+
+    // Cargar el SVG y AJUSTARLO al recuadro
     fetch('ecuador.svg')
-      .then(response => response.text())
-      .then(svgText => {
+      .then(r=>r.text())
+      .then(svgText=>{
         document.getElementById('map-container').innerHTML = svgText;
 
+        // -> Ajuste clave: recalcular viewBox con el bbox real para eliminar márgenes
+        const svg = document.querySelector('#map-container svg');
+        if(svg){
+          const paths = svg.querySelectorAll('path');
+          if(paths.length){
+            let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+            paths.forEach(p=>{
+              const b=p.getBBox();
+              minX=Math.min(minX,b.x); minY=Math.min(minY,b.y);
+              maxX=Math.max(maxX,b.x+b.width); maxY=Math.max(maxY,b.y+b.height);
+            });
+            svg.setAttribute('viewBox', `${minX} ${minY} ${maxX-minX} ${maxY-minY}`);
+            svg.setAttribute('preserveAspectRatio','xMidYMid meet');
+            svg.style.width='100%'; svg.style.height='100%';
+          }
+        }
+
+        // Cargar tus datos actuales para tooltips/tabla simple
         fetch('provincias_data.json')
-          .then(response => response.json())
-          .then(data => {
-            data.forEach(prov => {
+          .then(r=>r.json())
+          .then(data=>{
+            data.forEach(prov=>{
               const el = document.getElementById(prov.provincia);
-              if (el) {
-                // Tooltip (flotante)
-                el.addEventListener('mousemove', e => {
-                  tooltip.innerHTML = `<strong>${prov.nombre}</strong><br>
-                    Ventas: $${prov.ventas.toLocaleString()}<br>
-                    Producción: ${prov.produccion}<br>
-                    Origen Capital: ${prov.origen_capital}`;
-                  tooltip.style.display = 'block';
-                  tooltip.style.left = e.pageX + 10 + 'px';
-                  tooltip.style.top = e.pageY + 10 + 'px';
-                });
+              if(!el) return;
 
-                el.addEventListener('mouseleave', () => {
-                  tooltip.style.display = 'none';
-                });
+              // Tooltip (SIN CAMBIOS)
+              el.addEventListener('mousemove', e=>{
+                tooltip.innerHTML = `<strong>${prov.nombre}</strong><br>
+                  Ventas: $${Number(prov.ventas||0).toLocaleString()}<br>
+                  Producción: ${prov.produccion}<br>
+                  Origen Capital: ${prov.origen_capital}`;
+                tooltip.style.display='block';
+                tooltip.style.left = e.pageX + 10 + 'px';
+                tooltip.style.top  = e.pageY + 10 + 'px';
+              });
+              el.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
 
-                // Panel derecho (tabla fija)
-                el.addEventListener('click', () => {
+              // Click: Zamora Chinchipe => tabla especial; otras => tabla simple (igual que antes)
+              el.addEventListener('click', ()=>{
+                const esZamora = (prov.nombre || '').trim().toLowerCase() === 'zamora chinchipe' || (prov.provincia||'') === 'EC-Z';
+                if(esZamora){
+                  renderZamoraTable();
+                }else{
                   tableContainer.innerHTML = `
                     <h2>${prov.nombre}</h2>
                     <table>
                       <tr><th>Indicador</th><th>Valor</th></tr>
-                      <tr><td>Ventas</td><td>$${prov.ventas.toLocaleString()}</td></tr>
+                      <tr><td>Ventas</td><td>$${Number(prov.ventas||0).toLocaleString()}</td></tr>
                       <tr><td>Producción</td><td>${prov.produccion}</td></tr>
                       <tr><td>Origen Capital</td><td>${prov.origen_capital}</td></tr>
                     </table>
                   `;
-                });
-              }
+                }
+              });
             });
           });
       });
