@@ -4,8 +4,38 @@
   <meta charset="UTF-8" />
   <title>Mapa Ecuador</title>
   <style>
+    :root{
+      /* Ajusta estos valores si quieres variar el alto del banner */
+      --topband-h: 26px;   /* franja azul superior */
+      --brandbar-h: 84px;  /* zona blanca del banner */
+      --yellow-h: 5px;     /* línea amarilla inferior */
+      --banner-h: calc(var(--topband-h) + var(--brandbar-h) + var(--yellow-h));
+    }
+
     body{ margin:0; font-family:Arial, sans-serif; background:#fff; }
-    .container{ display:flex; gap:20px; padding:20px; }
+
+    /* ===== Banner superior ===== */
+    .site-header{ width:100%; }
+    .topband{
+      height: var(--topband-h);
+      background: linear-gradient(#0a5da8, #2a6fb1); /* azul como en la referencia */
+    }
+    .brandbar{
+      height: var(--brandbar-h);
+      background:#fff;
+      display:flex; align-items:center;
+      padding:0 20px; box-sizing:border-box;
+    }
+    .brand-logo{ height:64px; display:block; }
+    .brand-fill{ flex:1; } /* mantiene el resto en blanco */
+    .yellowline{ height: var(--yellow-h); background:#f3c000; } /* línea amarilla */
+
+    /* ===== Contenido principal ===== */
+    .container{
+      display:flex; gap:20px; padding:20px;
+      height: calc(100vh - var(--banner-h)); /* ocupa lo restante bajo el banner */
+      box-sizing: border-box;
+    }
 
     /* Panel del mapa */
     #map-wrapper{
@@ -15,7 +45,7 @@
       background:#b3e5fc;
       padding:10px;
       box-shadow:0 2px 6px rgba(0,0,0,0.1);
-      height:80vh;
+      height:100%; /* antes 80vh */
       display:flex; align-items:center; justify-content:center;
     }
     /* MUY IMPORTANTE para que el SVG pueda ocupar todo */
@@ -26,7 +56,7 @@
     path{ fill:#6ecf6e; stroke:#fff; stroke-width:0.5; cursor:pointer; transition:fill .15s; }
     path:hover{ fill:#4caf50; }
 
-    /* Tooltip (igual que lo tenías) */
+    /* Tooltip */
     .tooltip{
       position:absolute; background:rgba(0,0,0,0.85); color:#fff;
       padding:10px; border-radius:5px; pointer-events:none; display:none; font-size:14px;
@@ -35,7 +65,8 @@
     /* Panel derecho */
     #table-container{
       flex:1; background:#fff; padding:20px; border:1px solid #ddd; border-radius:10px;
-      box-shadow:0 2px 6px rgba(0,0,0,0.1); height:80vh; overflow:auto;
+      box-shadow:0 2px 6px rgba(0,0,0,0.1); height:100%; /* antes 80vh */
+      overflow:auto;
     }
     #table-container h2{ margin-top:0; }
 
@@ -46,6 +77,19 @@
   </style>
 </head>
 <body>
+
+  <!-- ===== Banner ===== -->
+  <header class="site-header">
+    <div class="topband"></div>
+    <div class="brandbar">
+      <!-- Logo a la izquierda, resto blanco -->
+      <img class="brand-logo" src="6bccc3b5-3614-4db6-a374-38d7e971d644.png" alt="Due Diligence" />
+      <div class="brand-fill"></div>
+    </div>
+    <div class="yellowline"></div>
+  </header>
+
+  <!-- ===== Contenido existente (sin cambios de lógica) ===== -->
   <div class="container">
     <div id="map-wrapper">
       <div id="map-container"></div>
@@ -193,7 +237,7 @@
               });
               el.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
 
-              // Click: Zamora Chinchipe => tabla especial; otras => tabla simple (igual que antes)
+              // Click: Zamora Chinchipe => tabla especial; otras => tabla simple
               el.addEventListener('click', ()=>{
                 const esZamora = (prov.nombre || '').trim().toLowerCase() === 'zamora chinchipe' || (prov.provincia||'') === 'EC-Z';
                 if(esZamora){
