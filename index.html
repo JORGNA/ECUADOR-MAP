@@ -191,4 +191,91 @@
 
     function renderZamoraTable(){
       const thead = `<thead><tr>${zamoraHeaders.map(h=>`<th>${h}</th>`).join('')}</tr></thead>`;
-      const tbody = `<tbody>${zamoraRows.map(r=>`<tr>${z
+      const tbody = `<tbody>${zamoraRows.map(r=>`<tr>${zamoraHeaders.map(h=>`<td>${r[h] ?? "—"}</td>`).join('')}</tr>`).join('')}</tbody>`;
+      tableContainer.innerHTML = `
+        <h2>ANÁLISIS DE MERCADO PREVENTIVO · PROVINCIA DE ZAMORA CHINCHIPE</h2>
+        <div class="small">* Campos con “—” no tienen dato reportado.</div>
+        <table>${thead}${tbody}</table>
+      `;
+    }
+
+    // ==== Cargar el SVG y dejarlo responsive sin romper su viewBox ====
+    fetch('ecuador.svg')
+      .then(r=>r.text())
+      .then(svgText=>{
+        document.getElementById('map-container').innerHTML = svgText;
+
+        const svg = document.querySelector('#map-container svg');
+        if (svg) {
+          // Hacemos el SVG responsive dentro del recuadro
+          svg.removeAttribute('width');
+          svg.removeAttribute('height');
+          svg.style.width = '100%';
+          svg.style.height = '100%';
+          svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+          // Solo si NO tiene viewBox, lo calculamos con el bbox de los paths
+          if (!svg.hasAttribute('viewBox')) {
+            const paths = svg.querySelectorAll('path');
+            if (paths.length) {
+              let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+              paths.forEach(p => {
+                const b = p.getBBox();
+                minX = Math.min(minX, b.x);        minY = Math.min(minY, b.y);
+                maxX = Math.max(maxX, b.x + b.width);
+                maxY = Math.max(maxY, b.y + b.height);
+              });
+              svg.setAttribute('viewBox', `${minX} ${minY} ${maxX - minX} ${maxY - minY}`);
+            }
+          }
+        }
+
+        // ==== Cargar datos para tooltips/tabla simple ====
+        fetch('provincias_data.json')
+          .then(r=>r.json())
+          .then(data=>{
+            data.forEach(prov=>{
+              const el = document.getElementById(prov.provincia);
+              if(!el) return;
+
+              // Tooltip
+              el.addEventListener('mousemove', e=>{
+                tooltip.innerHTML = `<strong>${prov.nombre}</strong><br>
+                  Ventas: $${Number(prov.ventas||0).toLocaleString()}<br>
+                  Producción: ${prov.produccion}<br>
+                  Origen Capital: ${prov.origen_capital}`;
+                tooltip.style.display='block';
+                tooltip.style.left = e.pageX + 10 + 'px';
+                tooltip.style.top  = e.pageY + 10 + 'px';
+              });
+              el.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
+
+              // Click: Zamora Chinchipe => tabla especial; otras => tabla simple
+              el.addEventListener('click', ()=>{
+                const esZamora = (prov.nombre || '').trim().toLowerCase() === 'zamora chinchipe' || (prov.provincia||'') === 'EC-Z';
+                if(esZamora){
+                  renderZamoraTable();
+                }else{
+                  tableContainer.innerHTML = `
+                    <h2>${prov.nombre}</h2>
+                    <table>
+                      <tr><th>Indicador</th><th>Valor</th></tr>
+                      <tr><td>Ventas</td><td>$${Number(prov.ventas||0).toLocaleString()}</td></tr>
+                      <tr><td>Producción</td><td>${prov.produccion}</td></tr>
+                      <tr><td>Origen Capital</td><td>${prov.origen_capital}</td></tr>
+                    </table>
+                  `;
+                }
+              });
+            });
+          })
+          .catch(err=>{
+            console.error('Error leyendo provincias_data.json:', err);
+          });
+      })
+      .catch(err=>{
+        console.error('Error cargando ecuador.svg:', err);
+      });
+  </script>
+</body>
+</html>
