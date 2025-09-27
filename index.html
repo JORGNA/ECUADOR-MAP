@@ -47,7 +47,7 @@
       background:#b3e5fc;
       padding:10px;
       box-shadow:0 2px 6px rgba(0,0,0,0.1);
-      height:80vh; /* volvemos a como lo tenías */
+      height:80vh; /* como lo tenías */
       display:flex; align-items:center; justify-content:center;
     }
     #map-container{ width:100%; height:100%; }
@@ -67,7 +67,7 @@
     #table-container{
       flex:1; background:#fff; padding:20px; border:1px solid #ddd; border-radius:10px;
       box-shadow:0 2px 6px rgba(0,0,0,0.1);
-      height:80vh; /* volvemos a como lo tenías */
+      height:80vh; /* como lo tenías */
       overflow:auto;
     }
     #table-container h2{ margin-top:0; }
@@ -88,6 +88,7 @@
         class="brand-logo"
         src="https://duediligenceecuador.com/images/logo.png"
         alt="Due Diligence"
+        loading="lazy"
       />
       <div class="brand-fill"></div>
     </div>
@@ -108,7 +109,86 @@
   <div id="tooltip" class="tooltip"></div>
 
   <script>
-    /* === Tu JS intacto, no toqué nada === */
-  </script>
-</body>
-</html>
+    const tooltip = document.getElementById('tooltip');
+    const tableContainer = document.getElementById('table-container');
+
+    /* -------- Tabla ESPECIAL para Zamora Chinchipe -------- */
+    const zamoraHeaders = [
+      "Provincia / Cantón",
+      "Ventas totales aprox. /2023",
+      "Producción /2023/Empresas",
+      "Origen de Capital/2023/Empresas",
+      "Pobreza y pobreza extrema % (Y)/ 2024",
+      "Sector formal /2024",
+      "Sector informal/empleo",
+      "Empleo",
+      "Desempleo",
+      "Tipo delito penal/2024",
+      "Asesinatos/24",
+      "Ventas Usd. Aprox. Mensual (IVA)/2024",
+      "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025",
+      "Participación tributaria a nivel nacional Enero - Julio/25"
+    ];
+
+    const zamoraRows = [
+      {
+        "Provincia / Cantón":"Zamora Chinchipe",
+        "Ventas totales aprox. /2023":"2,629,880",
+        "Producción /2023/Empresas":"2,075,097",
+        "Origen de Capital/2023/Empresas":"—",
+        "Pobreza y pobreza extrema % (Y)/ 2024":"53,2",
+        "Sector formal /2024":"24,40%",
+        "Sector informal/empleo":"72,40%",
+        "Empleo":"97,40%",
+        "Desempleo":"2,60%",
+        "Tipo delito penal/2024":"Asesinatos (24), homicidios (18), feminicidios (8)",
+        "Asesinatos/24":"50",
+        "Ventas Usd. Aprox. Mensual (IVA)/2024":"127.868.034",
+        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"69.228.107,68",
+        "Participación tributaria a nivel nacional Enero - Julio/25":"4to. luego de Pichincha, Guayas y Azuay"
+      },
+      {
+        "Provincia / Cantón":"El Pangui",
+        "Ventas totales aprox. /2023":"1,411,300",
+        "Producción /2023/Empresas":"1,148,320",
+        "Origen de Capital/2023/Empresas":"Explotación minas y canteras",
+        "Tipo delito penal/2024":"Asesinatos (5), homicidios (1), feminicidios (2)",
+        "Asesinatos/24":"8",
+        "Ventas Usd. Aprox. Mensual (IVA)/2024":"87.809.105",
+        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"49.677.831"
+      },
+      {
+        "Provincia / Cantón":"Zamora",
+        "Ventas totales aprox. /2023":"118,110",
+        "Producción /2023/Empresas":"58,832",
+        "Origen de Capital/2023/Empresas":"Comercio, reparación automotores y motocicletas",
+        "Tipo delito penal/2024":"Asesinatos (1), homicidios (6), feminicidios (3)",
+        "Asesinatos/24":"10",
+        "Ventas Usd. Aprox. Mensual (IVA)/2024":"6.222.707",
+        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"4.576.739"
+      },
+      {
+        "Provincia / Cantón":"Yantzaza",
+        "Ventas totales aprox. /2023":"1,075,960",
+        "Producción /2023/Empresas":"905,708",
+        "Origen de Capital/2023/Empresas":"Explotación minas y canteras",
+        "Tipo delito penal/2024":"Asesinatos (4), homicidios (5), feminicidios (2)",
+        "Asesinatos/24":"11",
+        "Ventas Usd. Aprox. Mensual (IVA)/2024":"31.112.418",
+        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"23.244.597"
+      },
+      {
+        "Provincia / Cantón":"Paquisha",
+        "Ventas totales aprox. /2023":"5,790",
+        "Producción /2023/Empresas":"2,348",
+        "Origen de Capital/2023/Empresas":"Explotación minas y canteras",
+        "Tipo delito penal/2024":"Asesinatos (5), homicidios (3), feminicidios (0)",
+        "Asesinatos/24":"8",
+        "Ventas Usd. Aprox. Mensual (IVA)/2024":"523.295",
+        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"474.105"
+      }
+    ];
+
+    function renderZamoraTable(){
+      const thead = `<thead><tr>${zamoraHeaders.map(h=>`<th>${h}</th>`).join('')}</tr></thead>`;
+      const tbody = `<tbody>${zamoraRows.map(r=>`<tr>${z
