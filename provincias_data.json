@@ -21,10 +21,11 @@
     "origen_capital": "Grande, mediana y pequeña empresa"
   },
   {
-    "provincia": "EC-Z",
-    "nombre": "Zamora Chinchipe",
-    "ventas": 0,
-    "produccion": "0",
-    "origen_capital": "oro"
+  "provincia": "EC-Z",
+  "nombre": "Zamora Chinchipe",
+  "ventas": 4200000,
+  "produccion": "Minería (oro, cobre), agricultura, ganadería, servicios",
+  "origen_capital": "Mediana y pequeña empresa, inversión extranjera en minería"
   }
+
 ]
