@@ -5,7 +5,7 @@
   <title>Mapa Ecuador</title>
   <style>
     :root{
-      /* Ajusta estos valores si quieres variar el alto del banner */
+      /* Altos del banner (ajústalos si lo necesitas) */
       --topband-h: 26px;   /* franja azul superior */
       --brandbar-h: 84px;  /* zona blanca del banner */
       --yellow-h: 5px;     /* línea amarilla inferior */
@@ -26,7 +26,12 @@
       display:flex; align-items:center;
       padding:0 20px; box-sizing:border-box;
     }
-    .brand-logo{ height:64px; display:block; }
+    /* Logo: pegado a la izquierda, tamaño exacto al banner */
+    .brand-logo{
+      height: 70px;     /* encaja dentro de la barra blanca (puedes subir a 76–80 si quieres) */
+      width: auto;
+      display:block;
+    }
     .brand-fill{ flex:1; } /* mantiene el resto en blanco */
     .yellowline{ height: var(--yellow-h); background:#f3c000; } /* línea amarilla */
 
@@ -74,6 +79,11 @@
     th,td{ border:1px solid #ddd; padding:8px; text-align:left; vertical-align:top; }
     th{ background:#f4f4f4; }
     .small{ font-size:12px; color:#666; }
+
+    /* Responsive: si la pantalla es muy chica, reduce un poco el logo */
+    @media (max-width: 600px){
+      .brand-logo{ height:56px; }
+    }
   </style>
 </head>
 <body>
@@ -82,8 +92,13 @@
   <header class="site-header">
     <div class="topband"></div>
     <div class="brandbar">
-      <!-- Logo a la izquierda, resto blanco -->
-      <img class="brand-logo" src="6bccc3b5-3614-4db6-a374-38d7e971d644.png" alt="Due Diligence" />
+      <!-- Logo a la izquierda desde la URL oficial -->
+      <img
+        class="brand-logo"
+        src="https://duediligenceecuador.com/images/logo.png"
+        alt="Due Diligence"
+        loading="lazy"
+      />
       <div class="brand-fill"></div>
     </div>
     <div class="yellowline"></div>
@@ -148,115 +163,4 @@
         "Origen de Capital/2023/Empresas":"Explotación minas y canteras",
         "Tipo delito penal/2024":"Asesinatos (5), homicidios (1), feminicidios (2)",
         "Asesinatos/24":"8",
-        "Ventas Usd. Aprox. Mensual (IVA)/2024":"87.809.105",
-        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"49.677.831"
-      },
-      {
-        "Provincia / Cantón":"Zamora",
-        "Ventas totales aprox. /2023":"118,110",
-        "Producción /2023/Empresas":"58,832",
-        "Origen de Capital/2023/Empresas":"Comercio, reparación automotores y motocicletas",
-        "Tipo delito penal/2024":"Asesinatos (1), homicidios (6), feminicidios (3)",
-        "Asesinatos/24":"10",
-        "Ventas Usd. Aprox. Mensual (IVA)/2024":"6.222.707",
-        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"4.576.739"
-      },
-      {
-        "Provincia / Cantón":"Yantzaza",
-        "Ventas totales aprox. /2023":"1,075,960",
-        "Producción /2023/Empresas":"905,708",
-        "Origen de Capital/2023/Empresas":"Explotación minas y canteras",
-        "Tipo delito penal/2024":"Asesinatos (4), homicidios (5), feminicidios (2)",
-        "Asesinatos/24":"11",
-        "Ventas Usd. Aprox. Mensual (IVA)/2024":"31.112.418",
-        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"23.244.597"
-      },
-      {
-        "Provincia / Cantón":"Paquisha",
-        "Ventas totales aprox. /2023":"5,790",
-        "Producción /2023/Empresas":"2,348",
-        "Origen de Capital/2023/Empresas":"Explotación minas y canteras",
-        "Tipo delito penal/2024":"Asesinatos (5), homicidios (3), feminicidios (0)",
-        "Asesinatos/24":"8",
-        "Ventas Usd. Aprox. Mensual (IVA)/2024":"523.295",
-        "Ventas Usd. Aprox. Mensual (IVA)/enero-agosto/2025":"474.105"
-      }
-    ];
-
-    function renderZamoraTable(){
-      const thead = `<thead><tr>${zamoraHeaders.map(h=>`<th>${h}</th>`).join('')}</tr></thead>`;
-      const tbody = `<tbody>${zamoraRows.map(r=>`<tr>${zamoraHeaders.map(h=>`<td>${r[h] ?? "—"}</td>`).join('')}</tr>`).join('')}</tbody>`;
-      tableContainer.innerHTML = `
-        <h2>ANÁLISIS DE MERCADO PREVENTIVO · PROVINCIA DE ZAMORA CHINCHIPE</h2>
-        <div class="small">* Campos con “—” no tienen dato reportado.</div>
-        <table>${thead}${tbody}</table>
-      `;
-    }
-    /* ------------------------------------------------------ */
-
-    // Cargar el SVG y AJUSTARLO al recuadro
-    fetch('ecuador.svg')
-      .then(r=>r.text())
-      .then(svgText=>{
-        document.getElementById('map-container').innerHTML = svgText;
-
-        // -> Ajuste clave: recalcular viewBox con el bbox real para eliminar márgenes
-        const svg = document.querySelector('#map-container svg');
-        if(svg){
-          const paths = svg.querySelectorAll('path');
-          if(paths.length){
-            let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-            paths.forEach(p=>{
-              const b=p.getBBox();
-              minX=Math.min(minX,b.x); minY=Math.min(minY,b.y);
-              maxX=Math.max(maxX,b.x+b.width); maxY=Math.max(maxY,b.y+b.height);
-            });
-            svg.setAttribute('viewBox', `${minX} ${minY} ${maxX-minX} ${maxY-minY}`);
-            svg.setAttribute('preserveAspectRatio','xMidYMid meet');
-            svg.style.width='100%'; svg.style.height='100%';
-          }
-        }
-
-        // Cargar tus datos actuales para tooltips/tabla simple
-        fetch('provincias_data.json')
-          .then(r=>r.json())
-          .then(data=>{
-            data.forEach(prov=>{
-              const el = document.getElementById(prov.provincia);
-              if(!el) return;
-
-              // Tooltip (SIN CAMBIOS)
-              el.addEventListener('mousemove', e=>{
-                tooltip.innerHTML = `<strong>${prov.nombre}</strong><br>
-                  Ventas: $${Number(prov.ventas||0).toLocaleString()}<br>
-                  Producción: ${prov.produccion}<br>
-                  Origen Capital: ${prov.origen_capital}`;
-                tooltip.style.display='block';
-                tooltip.style.left = e.pageX + 10 + 'px';
-                tooltip.style.top  = e.pageY + 10 + 'px';
-              });
-              el.addEventListener('mouseleave', ()=>{ tooltip.style.display='none'; });
-
-              // Click: Zamora Chinchipe => tabla especial; otras => tabla simple
-              el.addEventListener('click', ()=>{
-                const esZamora = (prov.nombre || '').trim().toLowerCase() === 'zamora chinchipe' || (prov.provincia||'') === 'EC-Z';
-                if(esZamora){
-                  renderZamoraTable();
-                }else{
-                  tableContainer.innerHTML = `
-                    <h2>${prov.nombre}</h2>
-                    <table>
-                      <tr><th>Indicador</th><th>Valor</th></tr>
-                      <tr><td>Ventas</td><td>$${Number(prov.ventas||0).toLocaleString()}</td></tr>
-                      <tr><td>Producción</td><td>${prov.produccion}</td></tr>
-                      <tr><td>Origen Capital</td><td>${prov.origen_capital}</td></tr>
-                    </table>
-                  `;
-                }
-              });
-            });
-          });
-      });
-  </script>
-</body>
-</html>
+        "Ventas Usd. Aprox. Mensual (IVA)/2024":"87.809.105
